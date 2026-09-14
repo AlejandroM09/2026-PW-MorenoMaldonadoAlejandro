@@ -57,3 +57,39 @@ footer{
 .tarjeta a:hover{
     text-decoration: underline;
 }
+
+/*tarea*/
+.formulario-registro{
+    padding: 1rem;
+    margin: 2rem auto;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    background-color: #f0eaea;
+}
+
+#nombre{
+    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-family: inherit;
+}
+
+#boleta{
+    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-family: inherit;
+}
+button{
+    padding: 0.6rem;
+    background-color: #4b87e8;
+    color: #ffffff;
+}
+button:hover{
+    background-color: #171717;
+}
+input:invalid{
+    border: 1px solid #ec1818;
+}
+input:valid{
+    border: 1px solid#1bce5d ;
+}
