@@ -10,7 +10,7 @@ Las expresiones regulares son patrones que nos ayudan a validar cadenas bajo cie
 condiciones.
 */
 
-const patrones0={
+const patrones={
     nombre:/^[A-Za-z-ÁÉÍÓÚáéíóúñÜü\s]{2,60}$/,
     boleta:/^\d{10}$/,
     fecha: /^(0[1-9]|[12]\d|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/
@@ -23,7 +23,7 @@ const mensajes={
 };
 
 function validarCampo(campo,valor){
-    return patrones[campo].test(valor.trim())
+    return patrones[campo].test(valor.trim());
 }
 
 //para validar el formulario debemos ocupar los principios 
@@ -39,14 +39,14 @@ if(typeof document!== 'undefined'){
 
         for(const campo of Object.keys(patrones)){
             const input = document.getElementById(campo);
-            const errorSpan=document.getElementById('error-${campo}');
+            const errorSpan=document.getElementById(`error-${campo}`);
             const esValido=validarCampo(campo,input.value);
-            input.classList.toggle('invalido',!edValido);
-            spanError.textContent = esValido?'':mensajes[campo];
+            input.classList.toggle('invalido',!esValido);
+            errorSpan.textContent = esValido ?'':mensajes[campo];
             if(!esValido) formularioValido=false;
         }
-        const mensajeExito =
-        document.getElementById('mensaje-exito');
+
+        const mensajeExito = document.getElementById('mensaje-exito');
         mensajeExito.textContent=formularioValido ?'Registro exitoso!':'';
         
     })

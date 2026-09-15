@@ -79,6 +79,13 @@ footer{
     margin-bottom: 0.75rem;
     font-family: inherit;
 }
+
+#fecha{
+    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-family: inherit;
+}
+
 button{
     padding: 0.6rem;
     background-color: #4b87e8;
@@ -91,5 +98,18 @@ input:invalid{
     border: 1px solid #ec1818;
 }
 input:valid{
-    border: 1px solid#1bce5d ;
+    border: 1px solid #1bce5d ;
+}
+
+.mensaje-exito{
+    color: #1bce5d;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.error{
+    color: #ec1818;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
 }
