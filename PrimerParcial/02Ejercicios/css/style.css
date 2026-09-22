@@ -1,0 +1,98 @@
+.ejercicio{
+    max-width: 960px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+}
+
+.ejercicio h2{
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.ejercicio p{
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+
+.ejercicio code{
+    background-color: #f3f4f6;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.tabla-scroll{
+    overflow-x:auto;
+    margin-bottom: 1.5rem;
+}
+
+.tabla-scroll table{
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+}
+
+.tabla-scroll th,
+.tabla-scroll td{
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tabla-scroll th{
+    background-color: #1f1f1f;
+    color: #ffffff;
+}
+
+.formulario{
+    display: flex;
+    align-items: flex-end;
+    gap:1rem;
+    flex-wrap:wrap;
+    margin-bottom: 1.5rem;
+}
+.formulario .campos{
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.formulario label{
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+.formulario select,
+.formulario input{
+    font-family: inherit;
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.35rem;
+    background-color: #ffffff;
+    color: #1f1f1f;
+}
+.formulario button{
+    font-family: inherit;
+    padding: 0.55rem 1.25rem;
+    border:none;
+    border-radius: 0.35rem;
+    background-color: #1f1f1f;
+    color: #ffffff;
+    cursor: pointer;
+}
+.formulario button:hover{
+    background-color: #3b82f6;
+}
+
+.resultado{
+    display: block;
+    white-space: pre-line;
+    background-color: #f3f4f6;
+    border:1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    min-height: 2.5rem;
+}
