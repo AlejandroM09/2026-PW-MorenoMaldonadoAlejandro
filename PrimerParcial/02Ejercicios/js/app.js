@@ -19,7 +19,7 @@ talleres.forEach((t)=>{
         <td>${t.nombre}</td>
         <td>${t.instructor}</td>
         <td>${t.cupo}</td>
-        <td>${t.inscribirse}</td>
+        <td>${t.inscritos}</td>
     `;
     tbody.append(fila);
     });

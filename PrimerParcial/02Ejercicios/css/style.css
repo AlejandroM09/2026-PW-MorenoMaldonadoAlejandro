@@ -1,8 +1,11 @@
+body{
+    background-color: #a9cce8;
+}
 .ejercicio{
     max-width: 960px;
     margin: 2rem auto;
     padding: 1.5rem;
-    background-color: #ffffff;
+    background-color:  #B2BDF0;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
 }
