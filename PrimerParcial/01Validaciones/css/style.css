@@ -5,7 +5,7 @@ body{
     margin: 0;
     font-family: 'Courier New', Courier, monospace;
     color: #1f1f1f;
-    background-color: #f9fafb;
+    background-color: #a9cce8;
 }
 
 header{
@@ -39,7 +39,7 @@ footer{
 }
 
 .tarjeta{
-    background-color: #ffffff;
+    background-color: #B2BDF0;
     border:1px solid #e5e7eb;
     border-radius: 0.5rem;
     padding: 1rem;
@@ -49,10 +49,11 @@ footer{
     margin-top: 0%;
     font-size: 1.1rem;
 }
+
 .tarjeta a{
-    color: #3b82f6;
     text-decoration: none;
 }
+
 /*hover sirve para cuando pasas el mouse en un elemento grafico*/
 .tarjeta a:hover{
     text-decoration: underline;
@@ -65,7 +66,8 @@ footer{
     max-width: 300px;
     display: flex;
     flex-direction: column;
-    background-color: #f0eaea;
+    background-color: #B2BDF0;
+    border:1px solid black;
 }
 
 #nombre{
