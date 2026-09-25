@@ -67,7 +67,7 @@ formArreglos.addEventListener('submit', (evento) =>{
 
 //segunda parte
 const formObjeto=document.getElementById('form-objeto');
-const resultado=document.getElementById('resultado-objeto');
+const resultadoObjetos=document.getElementById('resultado-objeto');
 
 formObjeto.addEventListener('submit',(evento)=>{
     evento.preventDefault();
@@ -86,12 +86,14 @@ formObjeto.addEventListener('submit',(evento)=>{
             resultado=JSON.stringify(Object.keys(taller));
             break;
         case 'values':
+            resultado=JSON.stringify(Object.values(taller));
             break;
         case 'entries':
             resultado=Object.entries(taller).map(([campo,valor])=> `${campo}:
             ${valor}`).join('\n')
             break;
         case 'stringify':
+            resultado=JSON.stringify(taller,null,2);
             break;
         case 'roundtrip':
             const textoJson = JSON.stringify(taller,null,2);
@@ -106,5 +108,5 @@ formObjeto.addEventListener('submit',(evento)=>{
                 objetoDeVuelta.nombre].join('\n')
             break;
     }
-    resultado.textContent=resultado;
+    resultadoObjetos.textContent=resultado;
 })
