@@ -31,4 +31,4 @@ console.log('tipo: ',typeof textoJson);
 console.log('Ahora de SON a Objeto')
 const objetoDeVuelta=JSON.parse(textoJson);
 console.log('tipo: ',typeof objetoDeVuelta);
-console.log(objetoDeVuelta.nombre)
+console.log(objetoDeVuelta.nombre);
