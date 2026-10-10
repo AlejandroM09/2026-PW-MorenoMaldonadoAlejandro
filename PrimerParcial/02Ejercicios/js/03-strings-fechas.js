@@ -50,4 +50,3 @@ const hoy = new Date();
 const diaDeDiferencia = Math.round((fechaAsistencia-hoy)/(1000*60*60*24));
 
 console.log(`Faltan ${diaDeDiferencia} dia(s) para la fecha de asistencia al taller (puede ser negativo)`);
-
