@@ -13,4 +13,4 @@ function validarContraseña(){
     return constrasena.lenght >=8;
 }
 
-module.exports={validarBoleta,validarBoleta,validarContraseña}=require('../validaciones')
+module.exports={validarBoleta,validarBoleta,validarContraseña}
