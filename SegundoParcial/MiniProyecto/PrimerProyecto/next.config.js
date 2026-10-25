@@ -8,7 +8,7 @@ module.exports={
     async rewrites(){
         return[
             {source: '/mini/:path*', destination: `${MINI_SERVIDOR_URL}/:path*`},
-            {source: '/api/:path*', destination: `${BACKEND_URL}/:path*`},
+            {source: '/api/:path*', destination: `${BACKEND_URL}/api/:path*`},
         ]
     }
 }

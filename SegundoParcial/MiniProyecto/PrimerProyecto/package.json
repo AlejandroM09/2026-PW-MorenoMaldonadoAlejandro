@@ -6,10 +6,10 @@
   "author": "AlejandroM09",
   "main": "index.js",
   "scripts": {
-    "dev":"next dev",
-    "build":"next build",
-    "start": "next start"
-  },
+  "dev": "next dev --webpack",
+  "build": "next build",
+  "start": "next start"
+},
   "dependencies": {
     "express": "^5.2.1",
     "next": "^16.4.0",
