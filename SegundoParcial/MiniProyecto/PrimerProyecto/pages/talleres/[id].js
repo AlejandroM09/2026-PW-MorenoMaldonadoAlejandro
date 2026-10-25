@@ -18,7 +18,11 @@ export default function DetalleTaller() {
   const [asistencias, setAsistencias] = useState([]);
   const [errorCarga, setErrorCarga] = useState('');
 
-  // TODO paso 5.1: estados del formulario.
+  const [nombre, setNombre] = useState('');
+  const [boleta, setBoleta] = useState('');
+  const [errorForm, setErrorForm] = useState('');
+  const [exito, setExito] = useState('');
+  const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
     // En el primer render router.query todavía viene vacío: hay que esperar a router.isReady.
@@ -41,7 +45,34 @@ export default function DetalleTaller() {
   const libres = taller ? Math.max(0, taller.cupo - ocupados) : 0;
   const lleno = taller !== null && libres === 0;
 
-  // TODO paso 5.2: función inscribir(e).
+  async function inscribir(e) {
+  e.preventDefault();
+  setErrorForm('');
+  setExito('');
+
+  const nombreLimpio = nombre.trim();
+  const boletaLimpia = boleta.trim();
+  if (!nombreLimpio) return setErrorForm('Escribe tu nombre.');
+  if (!validarBoleta(boletaLimpia)) return setErrorForm('La boleta debe tener 10 dígitos.');
+  // Tu turno: boleta repetida
+  if (lleno) return setErrorForm('El taller ya no tiene lugares.');
+
+  setEnviando(true);
+  try {
+    await pedirJSON('/asistencias', {
+      method: 'POST',
+      body: JSON.stringify({ taller_id: id, nombre_alumno: nombreLimpio, boleta: boletaLimpia }),
+    });
+      setExito(`¡Listo! ${nombreLimpio} quedó inscrito(a) en el taller.`);
+      setNombre('');
+      setBoleta('');
+      await cargar();
+    } catch (err) {
+      setErrorForm(err.message);
+    } finally {
+      setEnviando(false);
+    }
+  }
 
   if (errorCarga) {
     return (
@@ -76,7 +107,20 @@ export default function DetalleTaller() {
         </p>
       </section>
 
-      {/* Aquí irá el formulario del paso 5 */}
+      {
+        <section className={estilos.panel}>
+          <h2>Inscribirme</h2>
+            <form onSubmit={inscribir} className="formulario">
+              <input placeholder="Nombre completo" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+              <input placeholder="Boleta (10 dígitos)" value={boleta} onChange={(e) => setBoleta(e.target.value)} />
+              <button type="submit" disabled={lleno || enviando}>
+              {lleno ? 'Sin lugares' : enviando ? 'Inscribiendo…' : 'Inscribirme'}
+              </button>
+            </form>
+            {errorForm && <p className="error">{errorForm}</p>}
+            {exito && <p className={estilos.exito}>{exito}</p>}
+        </section>
+        }
 
             <h2>Inscritos ({ocupados})</h2>
       {ocupados === 0 ? (
