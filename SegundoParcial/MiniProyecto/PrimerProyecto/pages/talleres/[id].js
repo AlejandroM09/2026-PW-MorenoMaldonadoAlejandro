@@ -27,6 +27,8 @@ export default function DetalleTaller() {
   useEffect(() => {
     // En el primer render router.query todavía viene vacío: hay que esperar a router.isReady.
     if (!router.isReady) return;
+    if (router.query.boleta) setBoleta(String(router.query.boleta));
+    if (router.query.nombre) setNombre(String(router.query.nombre));
     cargar();
   }, [router.isReady, id]);
 
@@ -54,7 +56,8 @@ export default function DetalleTaller() {
   const boletaLimpia = boleta.trim();
   if (!nombreLimpio) return setErrorForm('Escribe tu nombre.');
   if (!validarBoleta(boletaLimpia)) return setErrorForm('La boleta debe tener 10 dígitos.');
-  // Tu turno: boleta repetida
+  if (asistencias.some((a) => a.boleta === boletaLimpia)) {
+  return setErrorForm('Esa boleta ya está inscrita en este taller.');}
   if (lleno) return setErrorForm('El taller ya no tiene lugares.');
 
   setEnviando(true);

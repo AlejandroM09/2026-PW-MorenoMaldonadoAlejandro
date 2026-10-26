@@ -34,3 +34,23 @@
   color: #166534;
   font-weight: 600;
 }
+
+.lista {
+  padding-left: 20px;
+}
+
+.lista li {
+  margin-bottom: 6px;
+}
+
+.lista a {
+  color: #6b1d3a;
+  font-weight: 600;
+}
+
+.buscador {
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
