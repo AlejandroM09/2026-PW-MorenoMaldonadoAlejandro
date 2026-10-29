@@ -7,6 +7,7 @@ export default function Menu(){
             <Link href="/practica/1">Práctica 1</Link>
             <Link href="/talleres">Talleres</Link>
             <Link href="/perfil">Perfil</Link>
+            <Link href="/registro">Crear cuenta</Link>
         </nav>
     )
 }
