@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { pedirJSON } from '../lib/api';
 import { formatearFecha } from '../lib/formato';
 import { validarBoleta } from '../lib/validaciones';
@@ -17,6 +17,15 @@ export default function Perfil() {
   const [disponibles, setDisponibles] = useState([]);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
+
+
+  useEffect(() => {
+  try {
+    const guardada = localStorage.getItem('ultimaBoleta');
+    if (guardada) setBoleta(guardada);
+  } catch {
+  }
+}, []);
   
   async function buscar(e) {
   e.preventDefault();
@@ -25,11 +34,16 @@ export default function Perfil() {
   const b = boleta.trim();
   if (!validarBoleta(b)) return setError('La boleta debe tener 10 dígitos.');
 
+  try {
+  localStorage.setItem('ultimaBoleta', b);
+  } catch {
+  }
+
   setCargando(true);
   try {
     const usuarios = await pedirJSON('/usuarios');
     const talleres = await pedirJSON('/talleres');
-    // Se piden las asistencias de cada taller al mismo tiempo; Promise.all espera a todas.
+    
     const listas = await Promise.all(talleres.map((t) => pedirJSON(`/talleres/${t.id}/asistencias`)));
     const conAsistencias = talleres.map((t, i) => ({ ...t, asistencias: listas[i] }));
 
@@ -55,11 +69,11 @@ const nombre = alumno ? alumno.nombre : nombreInscrito;
 
 
   return (
-    <main>
+    <main className={estilos.contenedor}>
       <h1>Mi perfil</h1>
       {/* TODO paso 6: formulario de boleta, datos del alumno, mis talleres y talleres con lugar. */}
 
-      <form onSubmit={buscar} className="formulario">
+      <form onSubmit={buscar} className={estilos.formularioPerfil}>
       <input placeholder="Tu boleta (10 dígitos)" value={boleta} onChange={(e) => setBoleta(e.target.value)} />
       <button type="submit" disabled={cargando}>{cargando ? 'Buscando…' : 'Ver mi perfil'}</button>
       </form>

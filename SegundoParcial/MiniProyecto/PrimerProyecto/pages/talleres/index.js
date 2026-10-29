@@ -11,6 +11,8 @@ export default function Talleres() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [busqueda, setBusqueda] = useState('');
+  const [orden, setOrden] = useState('fecha');
+
 
   useEffect(() => { 
     cargarTalleres(); 
@@ -18,7 +20,13 @@ export default function Talleres() {
 
   async function cargarTalleres() {
     try { 
-      setTalleres(await pedirJSON('/talleres'));
+      const lista = await pedirJSON('/talleres');
+      const asistencias = await Promise.all(
+      lista.map((t) => pedirJSON(`/talleres/${t.id}/asistencias`).catch(() => null))
+      );
+    setTalleres(
+    lista.map((t, i) => ({ ...t, inscritos: asistencias[i] ? asistencias[i].length : null }))
+    );
      } catch (err) { 
       setError(err.message); 
      } finally { 
@@ -30,10 +38,18 @@ export default function Talleres() {
     const visibles = talleres.filter((t) =>
     `${t.nombre} ${t.instructor || ''}`.toLowerCase().includes(texto)
     );
+
+    const ordenados = [...visibles].sort((a, b) =>
+    orden === 'nombre'
+      ? a.nombre.localeCompare(b.nombre, 'es')
+      : String(a.fecha).localeCompare(String(b.fecha))
+    );
+
   return (
-    <main>
+    <main className={estilos.contenedor}>
       <h1>Talleres</h1>
 
+    <div className={estilos.controles}>
       <input
         className={estilos.buscador}
         placeholder="Buscar por nombre o instructor"
@@ -41,6 +57,11 @@ export default function Talleres() {
         onChange={(e) => setBusqueda(e.target.value)}
       />
 
+    <select value={orden} onChange={(e) => setOrden(e.target.value)}>
+          <option value="fecha">Ordenar por fecha</option>
+          <option value="nombre">Ordenar por nombre (A-Z)</option>
+        </select>
+    </div>
         {cargando && <p>Cargando talleres…</p>}
         {error && <p className="error">{error}</p>}
         {!cargando && !error && talleres.length === 0 && <p>No hay talleres registrados.</p>}
@@ -50,7 +71,7 @@ export default function Talleres() {
 
 
         <div className={estilos.rejilla}>
-        {visibles.map((t) => (
+        {ordenados.map((t) => (
         <TarjetaTaller key={t.id} taller={t} />
         ))}
       </div>

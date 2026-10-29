@@ -90,7 +90,7 @@ export default function DetalleTaller() {
   const porcentaje = Math.min(100, (ocupados / taller.cupo) * 100);
 
   return (
-    <main>
+    <main className={estilos.contenedor}>
       <Link className={estilos.volver} href="/talleres">← Volver a talleres</Link>
       <h1>{taller.nombre}</h1>
 
@@ -113,7 +113,7 @@ export default function DetalleTaller() {
       {
         <section className={estilos.panel}>
           <h2>Inscribirme</h2>
-            <form onSubmit={inscribir} className="formulario">
+            <form onSubmit={inscribir} className={estilos.formularioPerfil}>
               <input placeholder="Nombre completo" value={nombre} onChange={(e) => setNombre(e.target.value)} />
               <input placeholder="Boleta (10 dígitos)" value={boleta} onChange={(e) => setBoleta(e.target.value)} />
               <button type="submit" disabled={lleno || enviando}>
@@ -129,7 +129,7 @@ export default function DetalleTaller() {
       {ocupados === 0 ? (
         <p>Todavía no hay inscritos. ¡Sé el primero!</p>
       ) : (
-        <table>
+        <table className={estilos.tabla}>
           <thead>
             <tr>
               <th>#</th>

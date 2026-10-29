@@ -54,3 +54,47 @@
   margin-bottom: 16px;
   box-sizing: border-box;
 }
+.contenedor {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 10px;
+  box-sizing: border-box;
+}
+.formularioPerfil {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 360px;
+  margin-bottom: 24px;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+}
+
+.tabla th,
+.tabla td {
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.tabla th {
+  font-weight: 700;
+}
+
+.tabla th:first-child,
+.tabla td:first-child {
+  width: 60px;
+}
+
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}

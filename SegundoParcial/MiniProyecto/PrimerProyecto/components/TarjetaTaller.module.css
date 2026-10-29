@@ -24,8 +24,7 @@
    margin: 0; 
    font-size: 14px; 
 } 
-.etiqueta, .etiquetaPasado { 
-   align-self: flex-start;
+.etiqueta, .etiquetaPasado, .etiquetaLleno { 
    padding: 2px 8px; 
    border-radius: 999px; 
    font-size: 12px; 
@@ -46,4 +45,13 @@
       font-weight: 600; 
       text-decoration: none; 
    }
+.etiquetas {
+  display: flex;
+  gap: 6px;
+  align-self: flex-start;
+}
 
+.etiquetaLleno {
+  background: #fee2e2;
+  color: #b91c1c;
+}
