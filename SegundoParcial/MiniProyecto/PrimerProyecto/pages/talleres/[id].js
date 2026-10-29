@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { pedirJSON } from '../../lib/api';
-import { formatearFecha, ocultarBoleta } from '../../lib/formato';
+import { formatearFecha, ocultarBoleta, yaPaso } from '../../lib/formato';
 import { validarBoleta } from '../../lib/validaciones';
 import estilos from '../../styles/Talleres.module.css';
 
@@ -46,6 +46,8 @@ export default function DetalleTaller() {
   const ocupados = asistencias.length;
   const libres = taller ? Math.max(0, taller.cupo - ocupados) : 0;
   const lleno = taller !== null && libres === 0;
+  const pasado = taller !== null && yaPaso(taller.fecha);
+
 
   async function inscribir(e) {
   e.preventDefault();
@@ -58,7 +60,9 @@ export default function DetalleTaller() {
   if (!validarBoleta(boletaLimpia)) return setErrorForm('La boleta debe tener 10 dígitos.');
   if (asistencias.some((a) => a.boleta === boletaLimpia)) {
   return setErrorForm('Esa boleta ya está inscrita en este taller.');}
+  
   if (lleno) return setErrorForm('El taller ya no tiene lugares.');
+  if (pasado) return setErrorForm('El taller ya pasó.');
 
   setEnviando(true);
   try {
@@ -116,8 +120,8 @@ export default function DetalleTaller() {
             <form onSubmit={inscribir} className={estilos.formularioPerfil}>
               <input placeholder="Nombre completo" value={nombre} onChange={(e) => setNombre(e.target.value)} />
               <input placeholder="Boleta (10 dígitos)" value={boleta} onChange={(e) => setBoleta(e.target.value)} />
-              <button type="submit" disabled={lleno || enviando}>
-              {lleno ? 'Sin lugares' : enviando ? 'Inscribiendo…' : 'Inscribirme'}
+              <button type="submit" disabled={pasado || lleno || enviando}>
+              {pasado ? 'Ya pasó la fecha' : lleno ? 'Sin lugares' : enviando ? 'Inscribiendo…' : 'Inscribirme'}
               </button>
             </form>
             {errorForm && <p className="error">{errorForm}</p>}
