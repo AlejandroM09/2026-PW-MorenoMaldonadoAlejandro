@@ -8,6 +8,7 @@ export default function Menu(){
             <Link href="/talleres">Talleres</Link>
             <Link href="/perfil">Perfil</Link>
             <Link href="/registro">Crear cuenta</Link>
+            <Link href="/asistencias">Asistencias</Link>
         </nav>
     )
 }

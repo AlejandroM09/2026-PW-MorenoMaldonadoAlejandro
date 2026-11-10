@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { pedirJSON } from '../lib/api';
-import { formatearFecha } from '../lib/formato';
+import { esHoy, formatearFecha, yaPaso } from '../lib/formato';
 import { validarBoleta } from '../lib/validaciones';
 import estilos from '../styles/Talleres.module.css';
+
 
 // /perfil — el alumno escribe su boleta y ve sus datos, sus talleres y los talleres con lugar.
 // Todavía no hay login (llega en la semana 10): por eso se busca por boleta.
@@ -17,6 +18,7 @@ export default function Perfil() {
   const [disponibles, setDisponibles] = useState([]);
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
+  const [marcas, setMarcas] = useState({}); // asistencias marcadas, por taller
 
 
   useEffect(() => {
@@ -39,6 +41,8 @@ export default function Perfil() {
   } catch {
   }
 
+
+
   setCargando(true);
   try {
     const usuarios = await pedirJSON('/usuarios');
@@ -51,6 +55,18 @@ export default function Perfil() {
     const conLugar = conAsistencias.filter(
       (t) => !mios.includes(t) && t.asistencias.length < t.cupo
     );
+
+    const marcasGuardadas = {};
+    mios.forEach((t) => {
+      try {
+        const guardado = localStorage.getItem(`asistencia-taller-${t.id}`);
+        marcasGuardadas[t.id] = guardado ? JSON.parse(guardado) : [];
+      } catch {
+        marcasGuardadas[t.id] = [];
+      }
+    });
+    setMarcas(marcasGuardadas);
+
     const inscripcion = mios.length > 0 ? mios[0].asistencias.find((a) => a.boleta === b) : null;
 
     setAlumno(usuarios.find((u) => u.boleta === b) || null);
@@ -67,7 +83,28 @@ export default function Perfil() {
 
 const nombre = alumno ? alumno.nombre : nombreInscrito;
 
+// Mi inscripción en un taller (la que tiene mi boleta).
+function miInscripcion(t) {
+  return t.asistencias.find((a) => a.boleta === buscada);
+}
 
+// Marca o desmarca mi asistencia. Solo funciona el día del taller.
+function alternarAsistencia(t) {
+  const mia = miInscripcion(t);
+  if (!mia || !esHoy(t.fecha)) return;
+
+  const actuales = marcas[t.id] || [];
+  const nuevas = actuales.includes(mia.id)
+    ? actuales.filter((m) => m !== mia.id)
+    : [...actuales, mia.id];
+
+  setMarcas({ ...marcas, [t.id]: nuevas });
+  try {
+    localStorage.setItem(`asistencia-taller-${t.id}`, JSON.stringify(nuevas));
+  } catch {
+    // Si no se puede guardar, la marca se ve en pantalla pero se pierde al recargar.
+  }
+}
   return (
     <main className={estilos.contenedor}>
       <h1>Mi perfil</h1>
@@ -103,11 +140,28 @@ const nombre = alumno ? alumno.nombre : nombreInscrito;
       <p>Todavía no estás inscrito en ningún taller.</p>
     ) : (
       <ul className={estilos.lista}>
-        {misTalleres.map((t) => (
-          <li key={t.id}>
-            <Link href={`/talleres/${t.id}`}>{t.nombre}</Link> — {formatearFecha(t.fecha)}
-          </li>
-        ))}
+        {misTalleres.map((t) => {
+          const mia = miInscripcion(t);
+          const marcada = (marcas[t.id] || []).includes(mia.id);
+          const hoy = esHoy(t.fecha);
+          return (
+            <li key={t.id}>
+              <Link href={`/talleres/${t.id}`}>{t.nombre}</Link> — {formatearFecha(t.fecha)}{' '}
+              <label>
+                <input
+                  type="checkbox"
+                  checked={marcada}
+                  disabled={!hoy}
+                  onChange={() => alternarAsistencia(t)}
+                />{' '}
+                Asistí
+              </label>
+              {!hoy && (
+                <small> ({yaPaso(t.fecha) ? 'el taller ya pasó' : 'se podrá marcar el día del taller'})</small>
+              )}
+            </li>
+          );
+        })}
       </ul>
       )}
       <h2>Talleres con lugar disponible</h2>

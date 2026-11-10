@@ -23,6 +23,13 @@ export function yaPaso(fecha) {
   return aFechaLocal(fecha) < hoy;
 }
 
+// true si el taller es hoy.
+export function esHoy(fecha) {
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  return aFechaLocal(fecha).getTime() === hoy.getTime();
+}
+
 // La boleta es un dato personal: en listas públicas solo se muestran los últimos 4 dígitos.
 export function ocultarBoleta(boleta) {
   const texto = String(boleta);
