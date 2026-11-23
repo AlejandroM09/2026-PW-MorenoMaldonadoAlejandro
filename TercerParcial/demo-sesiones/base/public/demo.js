@@ -192,4 +192,3 @@ async function iniciar() {
 }
 
 iniciar();
-    

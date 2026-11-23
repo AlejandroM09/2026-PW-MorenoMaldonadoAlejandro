@@ -30,7 +30,7 @@ function crearApp(config, pool){
     app.use(express.json());
     //mandamos a traer el modelo
     const usuarios = crearModeloUsuarios(pool);
-
+        const tokens = crearModeloTokens(pool); 
     //aqui el servidor debe de recordar cada vez que existe una sesión, para eso vamos a ocupar el almacen
 
     const almacen = config.almacen === 'memoria' ? new session.MemoryStore() : new MySQLStore({createDatabaseTable: false, clearExpired: false}, pool);
@@ -181,15 +181,7 @@ function crearApp(config, pool){
         }
     });
 
-    app.use(express.static(path.join(__dirname, 'public')));
-
-    app.use((error, req, res, next)=>{
-        console.error(error);
-        res.status(500).json({error: 'Error del servidor'});
-    });
-
-    app.use('/api', (req, res)=> res.status(404).json({error: 'Ruta no encontrada'}));
-
+    
 
     //implementacion de jwt
     const SECRETO_JWT=config.jwtSecreto||process.env.JWT_SECRET||'secreto-jwt-solo-para-esta-demo';
@@ -211,8 +203,8 @@ function crearApp(config, pool){
 
     //tenemos que hacer una funcion que se encargue de validar quien necesita o no un tokwn dentro de la aplicacion entre el middleware
     async function requiereJWT(req,res,next) {
-        const encabezado=req.header.authorization||'';
-        if(!encabezado.startWith('Bearer ')){
+        const encabezado=req.headers.authorization||'';
+        if(!encabezado.startsWith('Bearer ')){
             return res.status(401).json({error:'Falta un token asociado'});
         }
         const token=encabezado.slice('Bearer '.length);
@@ -221,7 +213,7 @@ function crearApp(config, pool){
         try{
             datos=jwt.verify(token,SECRETO_JWT,{algorithms: ['HS256']});
         }catch(error){
-            if(error==='TokenExpiraError'){
+            if(error.name==='TokenExpiredError'){
                 return res.status(401).json({error: '401 Token expirado, por favor renuevelo'});
             }
             return res.status(401).json({error: '401 Token Invalido'});
@@ -234,6 +226,7 @@ function crearApp(config, pool){
                 return next(error);
         }
         req.jwt=datos;
+        req.tokenCrudo=token;
         next();
 
         }
@@ -266,17 +259,17 @@ function crearApp(config, pool){
             })
         });
 
-        app.get('/api/jwt/admin/reporte',requiereJWT,requiereRol('admin'),(req,res)=>{
+        app.get('/api/jwt/admin/reporte',requiereJWT,requiereRolJWT('admin'),(req,res)=>{
             res.json({reporte:'Talleres:3'});
         });
 
         app.post('/api/jwt/refresh',requiereJWT,(req,res)=>{
-            const{sub,usuario,nombre,rol}=req.jwtM
-            res.json({token: fimrarToken({id:sub,usuario,nombre,rol})});
+            const{sub,usuario,nombre,rol}=req.jwt;
+            res.json({token: firmarToken({id:sub,usuario,nombre,rol})});
 
         });
 
-        app.post('/api/jwt/logout',requiereJWT,async(req,res)=>{
+        app.post('/api/jwt/logout',requiereJWT,async(req,res,next)=>{
             try{
                 if(config.jwtRevocar){
                     await tokens.revocar(req.jwt.jti,req.jwt.usuario,req.jwt.exp);
@@ -291,13 +284,64 @@ function crearApp(config, pool){
         //Se debera de presentar los elementos de la sesión de acuerdo a la ruta de jwt incorporada
         //como en la tarea anterior, cambiar sesiones por jwt
 
+        app.get('/api/jwt/sesion', requiereJWT, (req, res)=>{
+            const { header, signature } = jwt.decode(req.tokenCrudo, { complete: true });
+            res.json({
+                encabezado: header,
+                datos: req.jwt,
+                firma: idCorto(signature),
+                usuario: { id: Number(req.jwt.sub), usuario: req.jwt.usuario, nombre: req.jwt.nombre, rol: req.jwt.rol },
+                token: idCorto(req.jwt.jti),
+                emitido: new Date(req.jwt.iat * 1000).toISOString(),
+                expira: new Date(req.jwt.exp * 1000).toISOString(),
+                expiraEnSegundos: Math.max(0, req.jwt.exp - Math.floor(Date.now()/1000)),
+            });
+        });
+
+        // Equivalente JWT de /api/diagnostico/sesiones: lo único que guarda el servidor es la lista negra.
+        app.get('/api/diagnostico/tokens', async (req, res, next)=>{
+            try{
+                const encabezado = req.headers.authorization || '';
+                const mio = encabezado.startsWith('Bearer ') ? jwt.decode(encabezado.slice(7)) : null;
+                const filas = await tokens.listar();
+                res.json({
+                    revocacion: config.jwtRevocar,
+                    revocados: filas.map((t)=>({
+                        token: idCorto(t.jti),
+                        esElTuyo: Boolean(mio && mio.jti === t.jti),
+                        usuario: t.usuario,
+                        expira: t.expira,
+                        revocadoEn: t.revocado_en,
+                    })),
+                });
+            }catch(error){
+                next(error);
+            }
+        });
+
+        app.get('/api/diagnostico/jwt', async (req, res, next)=>{
+            try{
+                const [filasSesiones] = await pool.query('SELECT COUNT(*) AS total FROM sessions');
+                const revocados = await tokens.listar();
+                res.json({
+                    sesionesEnMySQL: filasSesiones[0].total,
+                    revocados: revocados.map((t)=>({ jti: t.jti, usuario: t.usuario, expira: t.expira })),
+                });
+            }catch(error){
+                next(error);
+            }
+        });
+
+        app.use(express.static(path.join(__dirname, 'public')));
+
+        app.use((error, req, res, next)=>{
+            console.error(error);
+            res.status(500).json({error: 'Error del servidor'});
+        });
+
+        app.use('/api', (req, res)=> res.status(404).json({error: 'Ruta no encontrada'}));
     return app;
 
 }
 
 module.exports = {crearApp, NOMBRE_COOKIE}
-
-
-//tarea 1 deberan de realizar una infografia sobre la autenticación con el uso de jwt y como se implementa para el domingo
-
-//tarea 2 con el uso del archivo que se les va a proveer deberan de completar y realizar las pruebas al ejercciio de sesiones en el archivo llamado xxx para implementar en el archivo demo.js, se evaluara la siguiente clase.
