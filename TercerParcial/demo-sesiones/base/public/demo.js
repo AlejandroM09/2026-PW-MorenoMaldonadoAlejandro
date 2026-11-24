@@ -5,9 +5,15 @@ const $ = (id) => document.getElementById(id);
 //Esta es una sola funcion que habla con la API para que no se repita el fetch en cada boton. Siempre regresa {status, datos} ya que fetch no marca error con 401 o 403
 //Solo mando Content-Type cuando hay cuerpo, porque sin él express.json() no lee el body del login.
 // No uso credentials: 'include' porque la página y la API están en el mismo servidor y el navegador manda la cookie solo.
-async function llamar(metodo,url,body)
+async function llamar(metodo,url,body,conToken)
 {
     const options={method: metodo,headers:{}};
+
+    // Solo las peticiones de la tarjeta 6 mandan el token (las de sesión usan la cookie).
+    if(conToken){
+        const token=leerToken();
+        if(token) options.headers['Authorization']=`Bearer ${token}`;
+    }
 
     if(body!==undefined){
         options.headers['Content-Type']='application/json';
@@ -191,4 +197,135 @@ async function iniciar() {
   await refrescarTodo();
 }
 
+
+// =====================================================================================
+// TARJETA 6 · El token JWT
+// A diferencia de la cookie, el token lo guarda ESTE JavaScript (en localStorage)
+// y lo manda él mismo en el encabezado Authorization. El navegador no lo manda solo.
+// =====================================================================================
+const CLAVE='token';
+
+// Lee, guarda y borra el token de localStorage. El try/catch es por si el navegador bloquea localStorage.
+function leerToken(){
+    try{ return localStorage.getItem(CLAVE); }catch{ return null; }
+}
+function guardarToken(token){
+    try{ localStorage.setItem(CLAVE,token); }catch{ /* no se pudo guardar */ }
+    pintarToken();
+}
+function borrarToken(){
+    try{ localStorage.removeItem(CLAVE); }catch{ /* nada que borrar */ }
+    pintarToken();
+}
+
+// El payload de un JWT NO va cifrado: solo está codificado en base64url. Por eso lo podemos leer sin la clave.
+function base64urlATexto(parte){
+    const base64=parte.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(parte.length/4)*4,'=');
+    const bytes=Uint8Array.from(atob(base64),(c)=>c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+}
+function textoABase64url(texto){
+    const bytes=new TextEncoder().encode(texto);
+    let binario='';
+    bytes.forEach((b)=>{ binario+=String.fromCharCode(b); });
+    return btoa(binario).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+// Separa el token en sus 3 partes y decodifica la cabecera y el payload. Si no es un JWT, regresa null.
+function decodificar(token){
+    const partes=(token||'').split('.');
+    if(partes.length!==3) return null;
+    try{
+        return { partes, cabecera: JSON.parse(base64urlATexto(partes[0])), carga: JSON.parse(base64urlATexto(partes[1])) };
+    }catch{
+        return null;
+    }
+}
+
+// Pinta el token, sus 3 partes de colores, la cabecera y el payload decodificados.
+function pintarToken(){
+    const token=leerToken();
+    $('token').value=token||'';
+
+    const jwt=decodificar(token);
+    const partes=$('partes');
+    partes.textContent='';
+    if(!jwt){
+        partes.textContent=token ? '(no es un JWT: deben ser 3 partes separadas por puntos)' : '—';
+        $('cabecera').textContent='—';
+        $('carga').textContent='—';
+    }else{
+        ['jwt-cabecera','jwt-carga','jwt-firma'].forEach((clase,i)=>{
+            if(i>0) partes.append('.');
+            const span=document.createElement('span');
+            span.className=clase;
+            span.textContent=jwt.partes[i];
+            partes.append(span);
+        });
+        $('cabecera').textContent=JSON.stringify(jwt.cabecera,null,2);
+        const carga={ ...jwt.carga };
+        if(carga.iat) carga.iat=`${carga.iat}  (${new Date(carga.iat*1000).toLocaleTimeString()})`;
+        if(carga.exp) carga.exp=`${carga.exp}  (${new Date(carga.exp*1000).toLocaleTimeString()})`;
+        $('carga').textContent=JSON.stringify(carga,null,2);
+    }
+    pintarEstadoJwt();
+}
+
+// El reloj del NAVEGADOR: solo informa. Quien decide si el token sirve es el servidor.
+function pintarEstadoJwt(){
+    const jwt=decodificar(leerToken());
+    const estado=$('estado-jwt');
+    if(!jwt){
+        estado.textContent='Sin token: para el servidor eres anónimo (401)';
+        estado.className='estado sin-sesion';
+        return;
+    }
+    const faltan=jwt.carga.exp-Math.floor(Date.now()/1000);
+    if(faltan>0){
+        estado.textContent=`Token de ${jwt.carga.usuario} · rol ${jwt.carga.rol} · vence en ${faltan} s (según el reloj del navegador)`;
+        estado.className='estado con-sesion';
+    }else{
+        estado.textContent=`Token de ${jwt.carga.usuario} VENCIDO hace ${-faltan} s`;
+        estado.className='estado sin-sesion';
+    }
+}
+
+// Pedir token: usa el usuario y la contraseña de la tarjeta 2. NO crea sesión: la tarjeta 1 sigue igual.
+$('btn-pedir-token').addEventListener('click', async ()=>{
+    const cuerpo={ usuario: $('usuario').value, contrasena: $('contrasena').value };
+    const { status, datos }=await llamar('POST','/api/jwt/login',cuerpo);
+    anotar('POST','/api/jwt/login',status,datos);
+    if(status===200 && datos && datos.token) guardarToken(datos.token);
+    await refrescarTodo();
+});
+
+// Las dos rutas protegidas con JWT: el 4º parámetro (true) hace que llamar mande el token.
+$('btn-perfil-token').addEventListener('click', async ()=>{
+    const { status, datos }=await llamar('GET','/api/jwt/perfil',undefined,true);
+    anotar('GET','/api/jwt/perfil',status,datos);
+});
+$('btn-admin-token').addEventListener('click', async ()=>{
+    const { status, datos }=await llamar('GET','/api/jwt/admin/reporte',undefined,true);
+    anotar('GET','/api/jwt/admin/reporte',status,datos);
+});
+
+// Usar lo que esté escrito en el cuadro de texto como token (para pegar uno viejo o alterado).
+$('btn-usar').addEventListener('click', ()=>{
+    const token=$('token').value.trim();
+    if(token) guardarToken(token); else borrarToken();
+});
+
+// Cambia el rol DENTRO del payload y deja la firma original. El servidor lo rechaza: la firma ya no coincide.
+$('btn-alterar').addEventListener('click', ()=>{
+    const jwt=decodificar(leerToken());
+    if(!jwt) return;
+    const carga={ ...jwt.carga, rol:'admin' };
+    guardarToken(`${jwt.partes[0]}.${textoABase64url(JSON.stringify(carga))}.${jwt.partes[2]}`);
+});
+
+$('btn-borrar').addEventListener('click', borrarToken);
+
+pintarToken();
+setInterval(pintarEstadoJwt,1000);   // actualiza el "vence en" cada segundo
+
+// Al final de todo, cuando ya existen todas las funciones y constantes.
 iniciar();

@@ -65,6 +65,28 @@
       <h2>5 · Configuración actual (<code>config.js</code>)</h2>
       <pre id="config">…</pre>
     </section>
+        <section class="tarjeta">
+      <h2>6 · Tu token (JWT)</h2>
+      <p id="estado-jwt" class="estado sin-sesion">Sin token</p>
+      <p class="detalle">Usa el usuario y la contraseña de la tarjeta 2. El token se guarda en <code>localStorage</code> y lo manda <strong>este JavaScript</strong> en <code>Authorization: Bearer …</code> (no el navegador, como la cookie).</p>
+      <div class="botones">
+        <button id="btn-pedir-token" type="button">Pedir token (POST /api/jwt/login)</button>
+        <button id="btn-perfil-token" type="button">GET /api/jwt/perfil</button>
+        <button id="btn-admin-token" type="button">GET /api/jwt/admin/reporte</button>
+      </div>
+      <textarea id="token" spellcheck="false" placeholder="(no hay token)"></textarea>
+      <div class="botones">
+        <button id="btn-usar" type="button">Usar este token</button>
+        <button id="btn-alterar" type="button">Alterar: rol → admin</button>
+        <button id="btn-borrar" type="button" class="peligro">Borrar token</button>
+      </div>
+      <p class="leyenda detalle"><span class="jwt-cabecera">cabecera</span><span class="jwt-carga">payload</span><span class="jwt-firma">firma</span></p>
+      <p id="partes" class="jwt-partes">—</p>
+      <div class="dos-columnas">
+        <div><h3>Cabecera (decodificada)</h3><pre id="cabecera">—</pre></div>
+        <div><h3>Payload (decodificado)</h3><pre id="carga">—</pre></div>
+      </div>
+    </section>
   </main>
 
   <script src="demo.js"></script>
